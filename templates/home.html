@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    /* background color with some padding */
+    body {
+      font-family: Arial;
+      padding: 20px;
+      background: #f1f1f1;
+    }
+    
+    /* Button used to open the apply form */
+    .open-button {
+      background-color: #555;
+      color: white;
+      padding: 16px 20px;
+      border: none;
+      cursor: pointer;
+      opacity: 0.8;
+      width: 280px;
+    }
+
+    /* The popup form - hidden by default */
+    .form-popup {
+      display: none;
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-50%, -50%);    
+      z-index: 1000;
+      border: 3px solid #f1f1f1;
+    }
+
+    /* Add styles to the form container */
+    .form-container {
+      max-width: 350px;
+      padding: 15px;
+      background-color: white;
+    }
+
+    /* Full-width input fields */
+    .form-container input[type=text], .form-container input[type=text],.form-container input[type=url] {
+      width: 100%;
+      padding: 15px;
+      margin: 5px 0 22px 0;
+      border: none;
+      background: #f1f1f1;
+    }
+
+    /* When the inputs get focus, do something */
+    .form-container input[type=text]:focus, .form-container input[type=text]:focus,.form-container input[type=url]:focus {
+      background-color: #ddd;
+      outline: none;
+    }
+
+    /* Set a style for the done button */
+    .form-container .btn {
+      background-color: #6cabdf;
+      color: white;
+      padding: 16px 20px;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      margin-bottom:10px;
+      opacity: 0.8;
+    }
+
+    /* Add a background color to the cancel button */
+    .form-container .cancel {
+      background-color: #6cabdf;
+    }
+
+    /* Add some hover effects to buttons */
+    .form-container .btn:hover, .open-button:hover {
+      opacity: 1;
+    }
+    
+    /* Header/ Title */
+    .header {
+      padding: 30px;
+      font-size: 40px;
+      text-align: center;
+      background: white;
+    }
+    
+    /* Create two unequal columns that floats next to each other */
+    /* Left column */
+    .leftcolumn {   
+      float: left;
+      width: 75%;
+    }
+    
+    /* Right column */
+    .rightcolumn {
+      float: left;
+      width: 25%;
+      padding-left: 20px;
+    }
+    
+    /* Add a card effect for articles */
+    .card {
+       background-color: white;
+       padding: 20px;
+       margin-top: 20px;
+    }
+    
+    /* Clear floats after the columns */
+    .row:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+    
+    /* Footer */
+    .footer {
+      padding: 20px;
+      text-align: center;
+      background: #ddd;
+      margin-top: 20px;
+    }
+    
+    /* Responsive layout - when the screen is less than 800px wide, make the two columns stack on top of each other instead of next to each other */
+    @media screen and (max-width: 800px) {
+      .leftcolumn, .rightcolumn {   
+        width: 100%;
+        padding: 0;
+      }
+    } 
+    </style> 
+  </head>
+      
+
+  <body>
+    <div class="header">
+     <h2>SPONHUNTER</h2>
+    </div>
+
+    <div class="row">
+     <div class="leftcolumn">
+        {% for post in posts %}
+      <div class="card">
+        <h2><a href="{{url_for('list_of_applications')}}?feed={{post.id}}"> 
+          {{post.brand_name}}</a></h2>
+        <h5>{{post.platform}}</h5>
+        <p>{{post.description}}</p>
+        <p>Posted {{post.daysago()}}</p>
+        <button class="open-button" onclick="on_apply({{post.id}})">Apply</button>
+      </div>
+        {% endfor %}
+     </div>
+
+    <div class="rightcolumn">
+      <div class="card">
+        <h5>Looking for influencers to promote your product?</h5>
+        <button class="btn" onclick="on_submit()">Post an ad</button>
+      </div>
+     </div>
+    </div>
+      <div class="form-popup" id="posted_by_adv">
+        <form action="/" method="POST" class="form-container"> 
+
+          <label for="brand_name"><b>Company/brand name</b></label>
+          <input type="text" placeholder="Enter brand name" name="brand_name" required>
+
+          <label for="platform"><b>Social media targeted</b></label>
+          <input type="text" placeholder="Enter targeted platform" name="platform" required>
+
+          <label for="description"><b>Description</b></label>
+          <input type="text" placeholder="Enter a description" name="description" required>
+
+          <button type="submit" class="btn">Submit</button>
+          <button type="button" class="btn cancel" onclick="exit_post()">Close</button>
+        </form>
+        
+      </div>
+
+    <div class="form-popup" id="application_by_user">
+      <form action="{{url_for('application_by_user')}}" method="POST" class="form-container">
+        <input type="hidden" name="feed_id" id="feed_id" value="-1">
+        <label for="name"><b>Name</b></label>
+        <input type="text" placeholder="Enter Name" name="name" required>
+    
+        <label for="email"><b>Email</b></label>
+        <input type="text" placeholder="Enter Email" name="email" required>
+    
+        <label for="profile_link"><b>Profile url</b></label>
+        <input type="url" placeholder="Enter your profile's url" name="profile_link" required>
+    
+        <button type="submit" class="btn">Apply</button>
+        <button type="button" class="btn cancel" onclick="exit_form()">Close</button>
+      </form>
+    </div>
+
+    <div class="footer">
+    <h6>Sponhunter is a platform to help you get better sponsorships from brands you love.</h6>
+    </div>
+
+   
+    <script>
+      function on_apply(feed_id){
+        document.getElementById("feed_id").setAttribute("value",feed_id);
+        document.getElementById("application_by_user").style.display = "block";
+      }
+      function exit_form(){
+        document.getElementById("application_by_user").style.display = "none";
+      }
+      function on_submit(){
+        document.getElementById("posted_by_adv").style.display = "block";
+      }
+      function exit_post(){
+        document.getElementById("posted_by_adv").style.display="none";
+      }
+  
+
+    </script>
+    
+  </body>
+</html>
